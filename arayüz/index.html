@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Belediye Sosyal Yardım Sistemi</title>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-icon">🏛️</div>
+      <h1>Belediye Sosyal Yardım<br>& Market Sistemi</h1>
+      <p>Yönetim Paneli v1.0</p>
+    </div>
+    <div class="fg">
+      <label for="in-user">Kullanıcı Adı</label>
+      <input type="text" id="in-user" placeholder="Kullanıcı adınızı giriniz" autocomplete="username">
+    </div>
+    <div class="fg">
+      <label for="in-pass">Şifre</label>
+      <input type="password" id="in-pass" placeholder="Giriş şifrenizi giriniz" autocomplete="off">
+    </div>
+    <div id="login-err" class="alert error hidden"><span>⚠️</span><span>Hatalı şifre. Lütfen tekrar deneyin.</span></div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()" style="margin-top:8px">Sisteme Giriş Yap</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:flex">
+  <nav class="sidebar">
+    <div class="sb-header">
+      <div class="sb-icon">🏛️</div>
+      <h2>Sosyal Yardım<br>Otomasyonu</h2>
+      <p>Belediye Yönetim Paneli</p>
+    </div>
+    <div id="role-tag-wrap" class="role-tag role-staff">
+      <span>👤</span><span id="role-tag-text">Personel</span>
+    </div>
+    <div class="logged-user">
+      <div class="logged-user-label">Giriş yapan kullanıcı</div>
+      <strong id="logged-user-name">-</strong>
+      <span id="logged-user-tc">T.C.: -</span>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-section">Modüller</div>
+      <button class="nav-btn active" onclick="go('kasa')" id="nav-kasa">
+        <span class="nav-icon">🛒</span>Dağıtım ve Kasa
+      </button>
+      <button class="nav-btn" onclick="go('bakiye')" id="nav-bakiye" disabled>
+        <span class="nav-icon">💰</span>Sosyal Yardım Tahsisi
+        <span class="lock-badge" id="lock-bakiye">🔒</span>
+      </button>
+      <button class="nav-btn" onclick="go('sicil')" id="nav-sicil">
+        <span class="nav-icon">🗂️</span>Vatandaş Sicil
+      </button>
+      <button class="nav-btn" onclick="go('envanter')" id="nav-envanter">
+        <span class="nav-icon">📦</span>Stok ve Envanter
+      </button>
+      <button class="nav-btn" onclick="go('kullanicilar')" id="nav-kullanicilar" disabled>
+        <span class="nav-icon">👥</span>Kullanıcı Yönetimi
+        <span class="lock-badge" id="lock-kullanicilar">🔒</span>
+      </button>
+    </div>
+    <div class="sb-footer">
+      <button class="btn btn-ghost btn-full btn-sm" onclick="doLogout()">🚪 Oturumu Kapat</button>
+    </div>
+  </nav>
+
+  <main class="content">
+
+    <!-- KASA -->
+    <div id="p-kasa">
+      <div class="ph"><h1>🛒 Kasa Alışveriş Ekranı</h1><p>Vatandaşı doğrulayın, ürün ekleyin ve alışverişi tamamlayın.</p></div>
+      <div class="g-kasa">
+        <div>
+          <div class="card mb16">
+            <div class="card-title">👤 Vatandaş Doğrulama</div>
+            <div class="fg">
+              <label for="kasa-tc">T.C. Kimlik Numarası</label>
+              <input type="text" id="kasa-tc" placeholder="11 haneli T.C. girin" maxlength="11"
+                onkeydown="if(event.key==='Enter')kasaQuery()">
+            </div>
+            <button class="btn btn-primary btn-full" onclick="kasaQuery()">🔍 Vatandaş Sorgula</button>
+          </div>
+          <div id="kasa-citizen" class="hidden">
+            <div class="citizen-card">
+              <div class="citizen-top">
+                <div class="avatar">👤</div>
+                <div><div class="c-name" id="kc-name">—</div><div class="c-tc" id="kc-tc">—</div></div>
+              </div>
+              <div class="c-pts-label">Mevcut Bakiye</div>
+              <div class="c-pts" id="kc-pts">0 Puan</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card mb16">
+            <div class="card-title">📦 Ürün Ekleme</div>
+            <div class="flex mb12">
+              <div class="flex-1">
+                <label for="kasa-barkod">Barkod</label>
+                <input type="text" id="kasa-barkod" placeholder="Barkod okutun veya girin"
+                  onkeydown="if(event.key==='Enter')addToCart()">
+              </div>
+              <div style="width:90px">
+                <label for="kasa-qty">Adet</label>
+                <input type="number" id="kasa-qty" value="1" min="1" style="text-align:center">
+              </div>
+            </div>
+            <button class="btn btn-green btn-full" onclick="addToCart()">➕ Sepete Ekle</button>
+            <div class="divider"></div>
+            <div class="card-title" style="margin-bottom:10px">🔎 Ürün Adıyla Ara</div>
+            <div class="flex">
+              <div class="flex-1">
+                <label for="kasa-urun-ara">Ürün Adı</label>
+                <input type="text" id="kasa-urun-ara" placeholder="Ürün adını yazın"
+                  onkeydown="if(event.key==='Enter')searchProducts()">
+              </div>
+              <div style="padding-top:22px"><button class="btn btn-primary" onclick="searchProducts()">🔎 Ara</button></div>
+            </div>
+            <div id="kasa-urun-sonuclari"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">
+              🧺 Sepet
+              <button class="btn btn-ghost btn-sm" onclick="clearCart()" style="margin-left:auto">🗑️ Temizle</button>
+            </div>
+            <div id="cart-list"><div class="cart-empty"><div style="font-size:32px;margin-bottom:8px">🛒</div>Sepet boş. Ürün barkodu okutun.</div></div>
+            <div id="cart-summary" class="hidden">
+              <div class="cart-total"><span>Toplam Tutar</span><span class="tot" id="cart-total-pts">0 Puan</span></div>
+              <button class="btn btn-purple btn-full" style="margin-top:14px" onclick="checkout()">✅ Alışverişi Onayla ve Bitir</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BAKİYE -->
+    <div id="p-bakiye" class="hidden">
+      <div class="ph"><h1>💰 Sosyal Yardım Tahsisi</h1><p>Vatandaşa puan / kredi yükleyin ve geçerlilik süresi belirleyin. Personel için tek yüklemede üst sınır 50 puandır.</p></div>
+      <div style="max-width:560px">
+        <div class="card">
+          <div class="card-title">📋 Puan Yükleme Formu</div>
+          <div class="fg">
+            <label for="bal-tc">T.C. Kimlik Numarası</label>
+            <input type="text" id="bal-tc" placeholder="11 haneli T.C. girin" maxlength="11"
+              onkeydown="if(event.key==='Enter')balQuery()">
+          </div>
+          <div class="mb12"><button class="btn btn-ghost btn-sm" onclick="balQuery()">🔍 Vatandaşı Bul</button></div>
+          <div id="bal-citizen" class="hidden">
+            <div class="citizen-card mb16">
+              <div class="citizen-top">
+                <div class="avatar">👤</div>
+                <div><div class="c-name" id="bc-name">—</div><div class="c-tc" id="bc-tc">—</div></div>
+              </div>
+              <div class="c-pts-label">Mevcut Bakiye</div>
+              <div class="c-pts" id="bc-pts">0 Puan</div>
+            </div>
+            <div class="g3 mb16">
+              <div><label for="bal-amount">Yüklenecek Puan</label><input type="number" id="bal-amount" value="10" min="1" step="10"></div>
+              <div><label for="bal-type">Süre Birimi</label>
+                <select id="bal-type" onchange="balTypeChange()">
+                  <option value="dakika">Dakika (Test)</option>
+                  <option value="saat">Saat</option>
+                  <option value="gun" selected>Gün</option>
+                </select>
+              </div>
+              <div><label for="bal-value">Süre Miktarı</label><input type="number" id="bal-value" value="30" min="1"></div>
+            </div>
+            <button class="btn btn-purple btn-full" onclick="loadBalance()">💳 Puanı ve Geçerliliği Kaydet</button>
+          </div>
+          <div id="bal-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SİCİL -->
+    <div id="p-sicil" class="hidden">
+      <div class="ph"><h1>🗂️ Vatandaş Sicil ve Sorgulama</h1><p>T.C., sicil numarası veya ad soyad ile arama yapın.</p></div>
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="citizenTab('search',this)">🔍 Vatandaş Arama</button>
+        <button class="tab-btn" onclick="citizenTab('add',this)">➕ Yeni Vatandaş Kaydet</button>
+      </div>
+      <div id="citizen-tab-search" class="citizen-tab-panel">
+        <div class="card mb20">
+          <div class="card-title">🔍 Arama</div>
+          <div class="flex">
+            <div class="flex-1">
+              <label for="sicil-q">Arama Terimi</label>
+              <input type="text" id="sicil-q" placeholder="Örn: 12345678901, 42 veya Ali Veli..."
+                onkeydown="if(event.key==='Enter')sicilSearch()">
+            </div>
+            <div style="padding-top:22px"><button class="btn btn-primary" onclick="sicilSearch()">🔍 Ara</button></div>
+          </div>
+        </div>
+        <div id="sicil-result"></div>
+      </div>
+      <div id="citizen-tab-add" class="citizen-tab-panel hidden">
+        <div class="card mb20">
+          <div class="card-title">➕ Yeni Vatandaş Kaydet</div>
+          <div class="g2 mb16">
+            <div><label for="new-citizen-tc">T.C. Kimlik Numarası</label><input type="text" id="new-citizen-tc" placeholder="11 haneli T.C." maxlength="11"></div>
+            <div><label for="new-citizen-name">Ad Soyad</label><input type="text" id="new-citizen-name" placeholder="Ad soyad"></div>
+          </div>
+          <div class="g3 mb16">
+            <div><label for="new-citizen-birth">Doğum Tarihi</label><input type="text" id="new-citizen-birth" placeholder="GG.AA.YYYY"></div>
+            <div><label for="new-citizen-address">Adres</label><input type="text" id="new-citizen-address" placeholder="Adres"></div>
+            <div><label for="new-citizen-points">Başlangıç Puanı</label><input type="number" id="new-citizen-points" value="0" min="0"></div>
+          </div>
+          <button class="btn btn-green" onclick="addCitizen()">💾 Vatandaşı Kaydet</button>
+          <div id="new-citizen-msg" style="margin-top:12px"></div>
+        </div>
+      </div>
+      <div id="detail-panel" class="hidden" style="margin-top:20px;border-top:2px solid var(--border);padding-top:20px">
+        <div class="flex mb16">
+          <h2 id="detail-title" style="font-size:18px;font-weight:700;flex:1">Vatandaş Detay</h2>
+          <button class="btn btn-ghost btn-sm" onclick="closeDetail()">✕ Kapat</button>
+        </div>
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="tabSwitch('profil',this)">👤 Profil & Sicil</button>
+          <button class="tab-btn" onclick="tabSwitch('alisveris',this)">🧾 Alışveriş Geçmişi</button>
+          <button class="tab-btn" onclick="tabSwitch('puan',this)">📊 Puan Geçmişi</button>
+        </div>
+        <div id="tab-profil" class="tab-panel active card">
+          <div class="g3 mb16" id="d-metrics"></div>
+          <div class="divider"></div>
+          <div id="d-profile"></div>
+        </div>
+        <div id="tab-alisveris" class="tab-panel card">
+          <div id="d-sales"><div class="cart-empty"><div style="font-size:32px">🧾</div><p>Yükleniyor...</p></div></div>
+        </div>
+        <div id="tab-puan" class="tab-panel card">
+          <div id="d-points"><div class="cart-empty"><div style="font-size:32px">📊</div><p>Yükleniyor...</p></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENVANTER -->
+    <div id="p-envanter" class="hidden">
+      <div class="ph"><h1>📦 Depo Envanteri ve Ürün Yönetimi</h1><p>Mevcut stok durumunu görüntüleyin ve yeni ürün ekleyin.</p></div>
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="envTab('list',this)">📋 Ürün Listesi</button>
+        <button class="tab-btn" id="tab-add-btn" onclick="envTab('add',this)" disabled>
+          ➕ Yeni Ürün Ekle <span class="lock-badge" id="lock-add">🔒</span>
+        </button>
+      </div>
+      <div id="env-list" class="tab-panel active">
+        <div id="inv-content"><div class="cart-empty"><div style="font-size:32px">📦</div><p>Yükleniyor...</p></div></div>
+      </div>
+      <div id="env-add" class="tab-panel">
+        <div class="card" style="max-width:480px">
+          <div class="card-title">➕ Yeni Ürün Ekle</div>
+          <div class="fg">
+            <label for="p-barkod">Barkod</label>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <input type="checkbox" id="p-barkod-auto" style="width:auto;margin:0">
+              <label for="p-barkod-auto" style="margin:0;font-size:12px;color:var(--text-2);cursor:pointer">Otomatik barkod üret</label>
+            </div>
+            <input type="text" id="p-barkod" placeholder="Otomatik üretilecek veya kendi barkodunuzu girin">
+          </div>
+          <div class="fg"><label for="p-name">Ürün Adı</label><input type="text" id="p-name" placeholder="Ürün adı"></div>
+          <div class="g2 mb16">
+            <div><label for="p-pts">Puan Değeri</label><input type="number" id="p-pts" value="10" min="1"></div>
+            <div><label for="p-stock">İlk Stok Miktarı</label><input type="number" id="p-stock" value="100" min="1"></div>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="addProduct()">💾 Ürünü Kaydet</button>
+          <div id="add-prod-msg" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KULLANICILAR -->
+    <div id="p-kullanicilar" class="hidden">
+      <div class="ph"><h1>👥 Kullanıcı Yönetimi</h1><p>Yeni personel veya yönetici hesabı oluşturun.</p></div>
+      <div class="card" style="max-width:560px">
+        <div class="card-title">➕ Yeni Kullanıcı Ekle</div>
+        <div class="fg"><label for="new-username">Kullanıcı Adı</label><input type="text" id="new-username" placeholder="Örn: mehmet"></div>
+        <div class="g2 mb16">
+          <div><label for="new-full-name">Ad Soyad</label><input type="text" id="new-full-name" placeholder="Ad soyad"></div>
+          <div><label for="new-tc">T.C. Kimlik Numarası</label><input type="text" id="new-tc" placeholder="11 haneli T.C." maxlength="11"></div>
+        </div>
+        <div class="fg">
+          <label for="new-password">Şifre</label>
+          <input type="password" id="new-password" placeholder="Şifre belirleyin">
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+            <input type="checkbox" id="show-new-password" style="width:auto;margin:0">
+            <label for="show-new-password" style="margin:0;font-size:12px;color:var(--text-2);cursor:pointer">Şifreyi gör</label>
+          </div>
+        </div>
+        <div class="fg"><label for="new-role">Rol</label>
+          <select id="new-role"><option value="Personel">Personel</option><option value="Yönetici">Yönetici</option></select>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="addUser()">💾 Kullanıcıyı Kaydet</button>
+        <div id="new-user-msg" style="margin-top:12px"></div>
+      </div>
+      <!-- index.html - Kullanıcı Yönetimi paneline eklenecek kart -->
+      <div class="card mb20" style="max-width:560px; margin-top:20px;">
+        <div class="card-title">⚙️ Personel Puan Yükleme Yetki Limiti</div>
+        <p style="font-size:13px; color:var(--text-2); margin-bottom:12px;">
+          Personel rolündeki çalışanların bir vatandaşa tek seferde veya toplamda yükleyebileceği tavan puan limitini buradan belirleyebilirsiniz.
+        </p>
+        <div class="flex">
+          <div class="flex-1">
+            <label for="cfg-personel-limit">Azami Personel Yükleme Limiti (Puan)</label>
+            <input type="number" id="cfg-personel-limit" value="50" min="0" step="5">
+          </div>
+          <div style="padding-top:22px;">
+            <button class="btn btn-purple" onclick="savePersonelLimit()">💾 Limiti Güncelle</button>
+          </div>
+        </div>
+        <div id="cfg-limit-msg" style="margin-top:10px;"></div>
+      </div>
+      
+      <div class="card mb20" style="max-width:850px; margin-top:20px;">
+        <div class="card-title">
+          👥 Kayıtlı Sistem Kullanıcıları
+          <button class="btn btn-ghost btn-sm" onclick="loadUsers()" style="margin-left:auto;">🔄 Listeyi Yenile</button>
+        </div>
+        <div id="users-table-wrap">
+          <div class="cart-empty"><p>Kullanıcılar yükleniyor...</p></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast-wrap"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
